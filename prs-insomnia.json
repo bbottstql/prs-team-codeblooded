@@ -14,6 +14,8 @@
       "scope": "collection",
       "_type": "workspace"
     },
+
+   
     {
       "_id": "env_base_prs",
       "parentId": "wrk_prs",
