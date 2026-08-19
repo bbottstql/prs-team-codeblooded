@@ -130,6 +130,7 @@ an unrelated branch — see the charter below.
 ## Team roster
 
 <!-- Lesson 1 guide: Lorin Harshman
+Bradley
 
 ## Sprint 1 assignments
 
