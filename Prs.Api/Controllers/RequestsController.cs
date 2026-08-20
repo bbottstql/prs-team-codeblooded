@@ -26,7 +26,7 @@ namespace Prs.Api.Controllers {
                            .AsQueryable();
 
             if (status != null) {
-                query = query.Where(request => request.Status != status);
+                query = query.Where(request => request.Status == status);
             }
 
             return await query.ToListAsync();

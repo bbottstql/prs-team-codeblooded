@@ -11,6 +11,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { useUserContext } from "../App";
 import { IRequestLine } from "../requestLines/IRequestLine";
 import { requestLineAPI } from "../requestLines/RequestLineAPI";
+import { canReviewRequest } from "./requestUtilities";
 
 interface IRejectionForm {
   rejectionReason: string | undefined;
@@ -81,9 +82,7 @@ function RequestDetailPage() {
     navigate("/requests");
   }
 
-  function userCanReview() {
-    return request?.userId == authenticatedUser?.id;
-  }
+  const reviewable = canReviewRequest(request, authenticatedUser);
 
   const save: SubmitHandler<IRejectionForm> = async (form: IRejectionForm) => {
     if (!request?.id || !form.rejectionReason) return;
@@ -112,7 +111,7 @@ function RequestDetailPage() {
     let requestWithLineRemoved = {
       ...request,
       requestLines: request?.requestLines.filter(
-        (l) => l.id === requestLine.id
+        (l) => l.id === requestLine.id,
       ),
     } as IRequest;
     setRequest(requestWithLineRemoved);
@@ -171,9 +170,11 @@ function RequestDetailPage() {
           </form>
         </Modal.Body>
       </Modal>
-      {request?.status === "REVIEW" && !userCanReview() && (
+      {request?.status === "REVIEW" && !reviewable && (
         <div className="alert alert-warning">
-          You are not allowed to review your own requests.
+          {!authenticatedUser?.isReviewer
+            ? "You are not a reviewer."
+            : "You cannot review your own requests."}
         </div>
       )}
       <div className="d-flex justify-content-between pb-4 mb-4 border-bottom border-2">
@@ -198,7 +199,7 @@ function RequestDetailPage() {
                 type="button"
                 className="btn btn-primary"
                 onClick={approve}
-                disabled={!userCanReview()}
+                disabled={!reviewable}
               >
                 <svg
                   className="bi pe-none me-2"
@@ -214,7 +215,7 @@ function RequestDetailPage() {
                 type="button"
                 className="btn btn-outline-danger"
                 onClick={handleShowModal}
-                disabled={!userCanReview()}
+                disabled={!reviewable}
               >
                 <svg
                   className="bi pe-none me-2"
