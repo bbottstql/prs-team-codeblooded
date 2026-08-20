@@ -6,6 +6,11 @@ import { useUserContext } from "./App";
 function Header() {
   const { user, setUser } = useUserContext();
   const navigate = useNavigate();
+  const roleLabel = user
+    ? [user.isReviewer && "Reviewer", user.isAdmin && "Admin"]
+        .filter(Boolean)
+        .join(" · ")
+    : "";
 
   function signout() {
     localStorage.removeItem("user");
@@ -58,10 +63,14 @@ function Header() {
                   {user?.firstName.substring(0, 1)}
                   {user?.lastName.substring(0, 1)}
                 </div>
-                <strong>
-                  {" "}
-                  {user?.firstName} {user?.lastName}
-                </strong>
+                <div className="d-flex flex-column align-items-start">
+                  <strong>
+                    {user.firstName} {user.lastName}
+                  </strong>
+                  {roleLabel && (
+                    <span className="small text-secondary">{roleLabel}</span>
+                  )}
+                </div>
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item href="#">Settings</Dropdown.Item>
