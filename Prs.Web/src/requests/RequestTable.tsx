@@ -14,31 +14,42 @@ function RequestTable() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user: authenticatedUser } = useUserContext();
   const status = searchParams.get("status") ?? undefined;
-  const userId = searchParams.get("userId")
-    ? Number(searchParams.get("userId"))
+  const selectedUserId = searchParams.get("userId");
+  const selectedExcludeUserId = searchParams.get("excludeUserId");
+  const userId = selectedUserId ? Number(selectedUserId) : undefined;
+  const excludeUserId = selectedExcludeUserId
+    ? Number(selectedExcludeUserId)
     : undefined;
-
-  async function loadRequests() {
-    try {
-      const data = await requestAPI.list(status, userId);
-      setRequests(data);
-    } catch (error: any) {
-      toast.error(error.message, { duration: 6000 });
-    }
-  }
 
   async function loadUsers() {
     try {
       const data = await userAPI.list();
       setUsers(data);
-    } catch (error: any) {
-      toast.error(error.message, { duration: 6000 });
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to load users.",
+        {
+          duration: 6000,
+        },
+      );
     }
   }
 
   useEffect(() => {
-    loadRequests();
-  }, [status, userId]);
+    async function fetchRequests() {
+      try {
+        const data = await requestAPI.list(status, userId, excludeUserId);
+        setRequests(data);
+      } catch (error: unknown) {
+        toast.error(
+          error instanceof Error ? error.message : "Unable to load requests.",
+          { duration: 6000 },
+        );
+      }
+    }
+
+    fetchRequests();
+  }, [status, userId, excludeUserId]);
 
   useEffect(() => {
     loadUsers();
@@ -52,7 +63,19 @@ function RequestTable() {
     const { name, value } = event.target as HTMLSelectElement;
     setSearchParams((currentParams) => {
       const nextParams = new URLSearchParams(currentParams);
-      if (value) {
+      if (name === "userId" && value === "anyone-else") {
+        nextParams.delete("userId");
+        if (authenticatedUser?.id !== undefined) {
+          nextParams.set("excludeUserId", authenticatedUser.id.toString());
+        }
+      } else if (name === "userId") {
+        nextParams.delete("excludeUserId");
+        if (value) {
+          nextParams.set(name, value);
+        } else {
+          nextParams.delete(name);
+        }
+      } else if (value) {
         nextParams.set(name, value);
       } else {
         nextParams.delete(name);
@@ -91,10 +114,13 @@ function RequestTable() {
           id="userId"
           name="userId"
           className="form-select"
-          value={searchParams.get("userId") ?? ""}
+          value={selectedExcludeUserId ? "anyone-else" : (selectedUserId ?? "")}
           onChange={handleFilterChange}
         >
           <option value="">Anyone</option>
+          {authenticatedUser?.isReviewer && (
+            <option value="anyone-else">Anyone else</option>
+          )}
           {authenticatedUser && (
             <option value={authenticatedUser.id}>
               {authenticatedUser.firstName} {authenticatedUser.lastName} (you)
