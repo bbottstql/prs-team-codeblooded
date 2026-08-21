@@ -3,16 +3,16 @@
 The Purchase Request System, worked as a team. Three developers, one repository, a backlog
 of tickets, and a working agreement.
 
-| Where | What |
-|---|---|
-| `Prs.Api/` | ASP.NET Core 8 Web API — EF Core, SQL Server |
-| `Prs.Web/` | React + TypeScript front end — Vite, Bootstrap 5 |
-| `Prs.Db/populate-prs.sql` | Seed data |
-| `tickets/` | The ticket text for all four sprints |
-| `prs-insomnia.json` | Insomnia collection for the API |
+| Where                             | What                                             |
+| --------------------------------- | ------------------------------------------------ |
+| `Prs.Api/`                        | ASP.NET Core 8 Web API — EF Core, SQL Server     |
+| `Prs.Web/`                        | React + TypeScript front end — Vite, Bootstrap 5 |
+| `Prs.Db/populate-prs.sql`         | Seed data                                        |
+| `tickets/`                        | The ticket text for all four sprints             |
+| `prs-insomnia.json`               | Insomnia collection for the API                  |
 | `.github/copilot-instructions.md` | The conventions Copilot is sent on every request |
 
-Both projects live in **one** repository — most tickets change an endpoint *and* the page
+Both projects live in **one** repository — most tickets change an endpoint _and_ the page
 that calls it, which is one branch, one pull request, one review.
 
 ---
@@ -110,17 +110,17 @@ anything destructive, and before verifying your fix.
 The ticket text ships in this repository, one file per ticket, under `tickets/`. Nobody has
 written them into GitHub for you — you do that yourselves, once per sprint:
 
-**Actions** tab → in the **left sidebar** under *All workflows*, click **Create sprint
+**Actions** tab → in the **left sidebar** under _All workflows_, click **Create sprint
 issues** → **Run workflow** (top right of the blue bar) → pick the sprint → **Run
 workflow**.
 
 The workflow name is a link in the left sidebar. The list filling the middle of the page is
-*past runs*, not workflows — that's where people go looking first.
+_past runs_, not workflows — that's where people go looking first.
 
 One issue is created per file, **unassigned**. Assign them yourselves in sprint planning.
 
-*(If Actions isn't available, open the file in `tickets/sprint-N/` and paste it into a new
-issue by hand. Nothing is lost but time.)*
+_(If Actions isn't available, open the file in `tickets/sprint-N/` and paste it into a new
+issue by hand. Nothing is lost but time.)_
 
 Noticed something that isn't your ticket? **New issue** → **Observation**. Don't fix it on
 an unrelated branch — see the charter below.
@@ -129,6 +129,10 @@ an unrelated branch — see the charter below.
 
 ## Team roster
 
+<<<<<<< HEAD
+Nathan
+=======
+>>>>>>> chore/1-add-Lorin-Harshman-to-roster
 <!-- Lesson 1 guide: Lorin Harshman
 Bradley
 
