@@ -38,6 +38,18 @@ export const requestAPI = {
       .then(parseJSON);
   },
 
+  duplicate(id: number, userId: number): Promise<IRequest> {
+    return fetch(`${url}/${id}/duplicate`, {
+      method: "POST",
+      body: JSON.stringify(userId),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(checkStatus)
+      .then(parseJSON);
+  },
+
   put(request: IRequest) {
     return fetch(`${url}/${request.id}`, {
       method: "PUT",

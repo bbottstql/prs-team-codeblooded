@@ -88,6 +88,23 @@ function RequestDetailPage() {
     navigate("/requests");
   }
 
+  async function duplicate() {
+    if (!request?.id || !authenticatedUser?.id) return;
+    setLoading(true);
+    try {
+      const duplicatedRequest = await requestAPI.duplicate(
+        request.id,
+        authenticatedUser.id,
+      );
+      toast.success("Request duplicated.");
+      navigate(`/requests/detail/${duplicatedRequest.id}`);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const reviewable = canReviewRequest(request, authenticatedUser);
 
   const save: SubmitHandler<IRejectionForm> = async (form: IRejectionForm) => {
@@ -186,6 +203,22 @@ function RequestDetailPage() {
       <div className="d-flex justify-content-between pb-4 mb-4 border-bottom border-2">
         <h2>Request</h2>
         <div className="d-flex justify-content-end gap-2">
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={duplicate}
+            disabled={loading || !authenticatedUser?.id}
+          >
+            <svg
+              className="bi pe-none me-2"
+              width={16}
+              height={16}
+              fill="currentColor"
+            >
+              <use xlinkHref={`${bootstrapIcons}#copy`} />
+            </svg>
+            Duplicate
+          </button>
           {request?.status === "NEW" && (
             <button type="button" className="btn btn-primary" onClick={review}>
               <svg
