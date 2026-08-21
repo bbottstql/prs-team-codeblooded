@@ -5,9 +5,14 @@ import { IRequest } from "./IRequest";
 interface IRequestHeaderProps {
   request: IRequest;
   user?: IUser;
+  commentCount?: number;
 }
 
-function RequestHeader({ request, user }: IRequestHeaderProps) {
+function RequestHeader({
+  request,
+  user,
+  commentCount = 0,
+}: IRequestHeaderProps) {
   return (
     <section className="d-flex justify-content-between pe-5">
       <dl className="">
@@ -28,6 +33,9 @@ function RequestHeader({ request, user }: IRequestHeaderProps) {
           </span>
         </dd>
       </dl>
+      <span className="badge bg-secondary align-self-start">
+        {commentCount} comments
+      </span>
       <dl>
         <dt>Requested By</dt>
         <dd>
