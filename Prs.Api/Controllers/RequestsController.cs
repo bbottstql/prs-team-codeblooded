@@ -18,9 +18,9 @@ namespace Prs.Api.Controllers {
         // GET: api/Requests?status=NEW
         // GET: api/Requests?status=REVIEW
         // GET: api/Requests?status=APPROVED
-        // GET: api/Requests?status=REJECTED&userId=5
+        // GET: api/Requests?status=REJECTED&userId=5&excludeUserId=6
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Request>>> GetAll([FromQuery] string? status = null, [FromQuery] int? userId = null) {
+        public async Task<ActionResult<IEnumerable<Request>>> GetAll([FromQuery] string? status = null, [FromQuery] int? userId = null, [FromQuery] int? excludeUserId = null) {
             var query = _db.Requests
                            .Include(request => request.User)
                            .AsQueryable();
@@ -31,6 +31,11 @@ namespace Prs.Api.Controllers {
 
             if (userId != null) {
                 query = query.Where(request => request.UserId == userId);
+
+            }
+
+            if (excludeUserId != null) {
+                query = query.Where(request => request.UserId != excludeUserId);
             }
 
             return await query.ToListAsync();

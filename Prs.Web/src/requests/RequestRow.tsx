@@ -5,15 +5,18 @@ import { Link } from "react-router-dom";
 import { requestAPI } from "./RequestAPI";
 import toast from "react-hot-toast";
 import { getTextBackgroundByStatus } from "../utility/formatUtilities";
+import { useUserContext } from "../App";
+import { canReviewRequest } from "./requestUtilities";
 
 interface IRequestRowProps {
   request: IRequest;
   onRemove: (request: IRequest) => void;
 }
 
-
-
 function RequestRow({ request, onRemove }: IRequestRowProps) {
+  const { user } = useUserContext();
+  const reviewable = canReviewRequest(request, user);
+
   return (
     <tr>
       <th scope="row">{request.id}</th>
@@ -35,6 +38,8 @@ function RequestRow({ request, onRemove }: IRequestRowProps) {
         <span className="text-body-secondary small text-wrap">
           {request.deliveryMode}
         </span>
+        <br />
+        <span className="small">{reviewable ? "Review" : "View only"}</span>
       </td>
       <td>
         <Dropdown className="d-inline">
@@ -54,7 +59,7 @@ function RequestRow({ request, onRemove }: IRequestRowProps) {
           </Dropdown.Toggle>
           <Dropdown.Menu>
             <Dropdown.Item as={Link} to={`/requests/detail/${request.id}`}>
-              Review
+              {reviewable ? "Review" : "View"}
             </Dropdown.Item>
             <Dropdown.Item as={Link} to={`/requests/edit/${request.id}`}>
               Edit

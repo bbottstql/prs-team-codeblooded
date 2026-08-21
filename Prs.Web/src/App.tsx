@@ -1,9 +1,10 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import { Outlet } from "react-router-dom";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { IUser } from "./users/IUser";
 import { Toaster } from "react-hot-toast";
+import { userAPI } from "./users/UserAPI";
 
 export interface UserContextType {
   user: IUser | undefined;
@@ -20,13 +21,27 @@ export function useUserContext(): UserContextType {
   return userContext;
 }
 
-function getPersistedUser(){
-  return undefined;
+function getPersistedUser(): IUser | undefined {
+  const persistedUser = localStorage.getItem("user");
+  return persistedUser ? (JSON.parse(persistedUser) as IUser) : undefined;
 }
 
 function App() {
   const [user, setUser] = useState<IUser | undefined>(getPersistedUser());
-  
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    userAPI
+      .find(user.id)
+      .then((freshUser) => {
+        const { password: _, ...safeUser } = freshUser;
+        setUser(safeUser as IUser);
+        localStorage.setItem("user", JSON.stringify(safeUser));
+      })
+      .catch(() => undefined);
+  }, []);
+
   return (
     <UserContext.Provider value={{ user, setUser }}>
       <Toaster

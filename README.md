@@ -129,7 +129,10 @@ an unrelated branch — see the charter below.
 
 ## Team roster
 
+<<<<<<< HEAD
 Nathan
+=======
+>>>>>>> chore/1-add-Lorin-Harshman-to-roster
 <!-- Lesson 1 guide: Lorin Harshman
 Bradley
 
