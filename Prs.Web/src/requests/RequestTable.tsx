@@ -1,4 +1,5 @@
 import { useState, useEffect, SyntheticEvent } from "react";
+import bootstrapIcons from "../assets/bootstrap-icons.svg";
 import { IRequest } from "./IRequest";
 import { requestAPI } from "./RequestAPI";
 import RequestRow from "./RequestRow";
@@ -19,6 +20,11 @@ function RequestTable() {
   const userId = selectedUserId ? Number(selectedUserId) : undefined;
   const excludeUserId = selectedExcludeUserId
     ? Number(selectedExcludeUserId)
+  const search = searchParams.get("search") ?? "";
+  const sort = searchParams.get("sort") as "status" | "total" | null;
+  const direction = searchParams.get("dir") === "desc" ? "desc" : "asc";
+  const userId = searchParams.get("userId")
+    ? Number(searchParams.get("userId"))
     : undefined;
 
   async function loadUsers() {
@@ -39,6 +45,7 @@ function RequestTable() {
     async function fetchRequests() {
       try {
         const data = await requestAPI.list(status, userId, excludeUserId);
+        const data = await requestAPI.list(status, userId);
         setRequests(data);
       } catch (error: unknown) {
         toast.error(
@@ -50,6 +57,7 @@ function RequestTable() {
 
     fetchRequests();
   }, [status, userId, excludeUserId]);
+  }, [status, userId]);
 
   useEffect(() => {
     loadUsers();
@@ -60,7 +68,9 @@ function RequestTable() {
   }
 
   function handleFilterChange(event: SyntheticEvent) {
-    const { name, value } = event.target as HTMLSelectElement;
+    const { name, value } = event.target as
+      | HTMLInputElement
+      | HTMLSelectElement;
     setSearchParams((currentParams) => {
       const nextParams = new URLSearchParams(currentParams);
       if (name === "userId" && value === "anyone-else") {
@@ -84,10 +94,62 @@ function RequestTable() {
     });
   }
 
+  function handleSortChange(column: "status" | "total") {
+    setSearchParams((currentParams) => {
+      const nextParams = new URLSearchParams(currentParams);
+      const nextDirection =
+        sort === column && direction === "asc" ? "desc" : "asc";
+      nextParams.set("sort", column);
+      nextParams.set("dir", nextDirection);
+      return nextParams;
+    });
+  }
+
   const otherUsers = users.filter((user) => user.id !== authenticatedUser?.id);
+  const normalizedSearch = search.trim().toLowerCase();
+  const visibleRequests = requests
+    .filter(
+      (request) =>
+        !normalizedSearch ||
+        request.description.toLowerCase().includes(normalizedSearch) ||
+        request.justification.toLowerCase().includes(normalizedSearch),
+    )
+    .sort((firstRequest, secondRequest) => {
+      if (!sort) return 0;
+      const firstValue =
+        sort === "total" ? firstRequest.total : firstRequest.status;
+      const secondValue =
+        sort === "total" ? secondRequest.total : secondRequest.status;
+      const comparison =
+        typeof firstValue === "number" && typeof secondValue === "number"
+          ? firstValue - secondValue
+          : String(firstValue).localeCompare(String(secondValue));
+      return direction === "asc" ? comparison : -comparison;
+    });
 
   return (
     <>
+      <div className="d-flex flex-column mb-4 w-25">
+        <label htmlFor="search" className="form-label">
+          Search
+        </label>
+        <div className="input-group">
+          <span className="input-group-text bg-white">
+            <svg className="bi" width={18} height={18} fill="currentColor">
+              <use xlinkHref={`${bootstrapIcons}#search`} />
+            </svg>
+          </span>
+          <input
+            id="search"
+            name="search"
+            type="search"
+            className="form-control border-start-0"
+            placeholder="Search requests"
+            value={search}
+            onChange={handleFilterChange}
+          />
+        </div>
+      </div>
       <div className="d-flex flex-column mb-4 w-25">
         <label htmlFor="status" className="form-label">
           Status
@@ -139,14 +201,31 @@ function RequestTable() {
             <tr>
               <th scope="col">#</th>
               <th scope="col">Description</th>
-              <th scope="col">Status</th>
-              <th scope="col">Total</th>
+              <th scope="col">
+                <button
+                  type="button"
+                  className="btn btn-link p-0 text-body text-decoration-none"
+                  onClick={() => handleSortChange("status")}
+                >
+                  Status{" "}
+                  {sort === "status" && (direction === "asc" ? "↑" : "↓")}
+                </button>
+              </th>
+              <th scope="col">
+                <button
+                  type="button"
+                  className="btn btn-link p-0 text-body text-decoration-none"
+                  onClick={() => handleSortChange("total")}
+                >
+                  Total {sort === "total" && (direction === "asc" ? "↑" : "↓")}
+                </button>
+              </th>
               <th scope="col">Requested By</th>
               <th />
             </tr>
           </thead>
           <tbody>
-            {requests.map((request) => (
+            {visibleRequests.map((request) => (
               <RequestRow
                 key={request.id}
                 request={request}
