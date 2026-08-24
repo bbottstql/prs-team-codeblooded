@@ -4,14 +4,45 @@ import { IRequest } from "./IRequest";
 const url = `${BASE_URL}/requests`;
 
 export const requestAPI = {
-  list(status?: string, userId?: number): Promise<IRequest[]> {
+  list(
+    status?: string,
+    userId?: number,
+    excludeUserId?: number,
+  ): Promise<IRequest[]> {
     let requestsUrl = `${url}`;
     const searchParams = new URLSearchParams();
     if (status) searchParams.set("status", status.toUpperCase());
-    if (userId) searchParams.set("userId", userId.toString());
+    if (userId) {
+      searchParams.set("userId", userId.toString());
+    } else if (excludeUserId) {
+      searchParams.set("excludeUserId", excludeUserId.toString());
+    }
     const query = searchParams.toString();
     if (query) requestsUrl += `?${query}`;
     return fetch(requestsUrl).then(checkStatus).then(parseJSON);
+  },
+
+  export(status?: string): Promise<{ blob: Blob; filename: string }> {
+    const exportParams = new URLSearchParams();
+    if (status) exportParams.set("status", status.toUpperCase());
+    const query = exportParams.toString();
+    const exportUrl = `${url}/export${query ? `?${query}` : ""}`;
+
+    return fetch(exportUrl)
+      .then(checkStatus)
+      .then(async (response) => {
+        const contentDisposition = response.headers.get("Content-Disposition");
+        const filenameMatch = contentDisposition?.match(
+          /filename\*?=(?:UTF-8''|"?)([^";]+)/i,
+        );
+
+        return {
+          blob: await response.blob(),
+          filename: filenameMatch?.[1]
+            ? decodeURIComponent(filenameMatch[1])
+            : "requests.csv",
+        };
+      });
   },
 
   find(id: number): Promise<IRequest> {
