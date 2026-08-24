@@ -7,6 +7,10 @@ function ProductCardSkeleton() {
   return (
     <Card className="" style={{ width: "23rem" }}>
       <ProgressBar now={30} variant="primary-subtle" />
+      <div
+        className="d-flex align-items-center justify-content-center bg-light"
+        style={{ height: "12rem" }}
+      />
       <address className="py-4 px-4">
         <div className="d-flex justify-content-between1 align-items-center1 justify-content-end">
           {" "}
