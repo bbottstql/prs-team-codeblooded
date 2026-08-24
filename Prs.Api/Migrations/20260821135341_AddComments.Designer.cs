@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Prs.Api.Data;
 
@@ -11,9 +12,11 @@ using Prs.Api.Data;
 namespace Prs.Api.Migrations
 {
     [DbContext(typeof(PrsDbContext))]
-    partial class PrsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821135341_AddComments")]
+    partial class AddComments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,7 +96,7 @@ namespace Prs.Api.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Prs.Api.Models.Request", b =>
@@ -138,7 +141,7 @@ namespace Prs.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Requests", (string)null);
+                    b.ToTable("Requests");
                 });
 
             modelBuilder.Entity("Prs.Api.Models.RequestLine", b =>
@@ -164,7 +167,7 @@ namespace Prs.Api.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("RequestLines", (string)null);
+                    b.ToTable("RequestLines");
                 });
 
             modelBuilder.Entity("Prs.Api.Models.User", b =>
@@ -214,7 +217,7 @@ namespace Prs.Api.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Prs.Api.Models.Vendor", b =>
@@ -268,7 +271,7 @@ namespace Prs.Api.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("Vendors", (string)null);
+                    b.ToTable("Vendors");
                 });
 
             modelBuilder.Entity("Prs.Api.Models.Comment", b =>
@@ -293,7 +296,7 @@ namespace Prs.Api.Migrations
             modelBuilder.Entity("Prs.Api.Models.Product", b =>
                 {
                     b.HasOne("Prs.Api.Models.Vendor", "Vendor")
-                        .WithMany()
+                        .WithMany("Products")
                         .HasForeignKey("VendorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -334,6 +337,11 @@ namespace Prs.Api.Migrations
             modelBuilder.Entity("Prs.Api.Models.Request", b =>
                 {
                     b.Navigation("RequestLines");
+                });
+
+            modelBuilder.Entity("Prs.Api.Models.Vendor", b =>
+                {
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

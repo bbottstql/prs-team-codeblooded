@@ -12,6 +12,9 @@ import { useUserContext } from "../App";
 import { IRequestLine } from "../requestLines/IRequestLine";
 import { requestLineAPI } from "../requestLines/RequestLineAPI";
 import { canReviewRequest } from "./requestUtilities";
+import { IComment } from "../comments/IComment";
+import { commentAPI } from "../comments/CommentAPI";
+import CommentSection from "../comments/CommentSection";
 
 interface IRejectionForm {
   rejectionReason: string | undefined;
@@ -22,6 +25,7 @@ function RequestDetailPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [request, setRequest] = useState<IRequest | undefined>(undefined);
+  const [comments, setComments] = useState<IComment[]>([]);
   const [showModal, setShowModal] = useState(false);
   const { user: authenticatedUser } = useUserContext();
 
@@ -44,6 +48,8 @@ function RequestDetailPage() {
     try {
       const request = await requestAPI.find(requestId);
       setRequest(request);
+      const comments = await commentAPI.list(requestId);
+      setComments(comments);
     } catch (error: any) {
       toast.error(error.message);
       throw new Error("There was an error loading the request");
@@ -80,6 +86,23 @@ function RequestDetailPage() {
       setLoading(false);
     }
     navigate("/requests");
+  }
+
+  async function duplicate() {
+    if (!request?.id || !authenticatedUser?.id) return;
+    setLoading(true);
+    try {
+      const duplicatedRequest = await requestAPI.duplicate(
+        request.id,
+        authenticatedUser.id,
+      );
+      toast.success("Request duplicated.");
+      navigate(`/requests/detail/${duplicatedRequest.id}`);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const reviewable = canReviewRequest(request, authenticatedUser);
@@ -180,6 +203,22 @@ function RequestDetailPage() {
       <div className="d-flex justify-content-between pb-4 mb-4 border-bottom border-2">
         <h2>Request</h2>
         <div className="d-flex justify-content-end gap-2">
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={duplicate}
+            disabled={loading || !authenticatedUser?.id}
+          >
+            <svg
+              className="bi pe-none me-2"
+              width={16}
+              height={16}
+              fill="currentColor"
+            >
+              <use xlinkHref={`${bootstrapIcons}#copy`} />
+            </svg>
+            Duplicate
+          </button>
           {request?.status === "NEW" && (
             <button type="button" className="btn btn-primary" onClick={review}>
               <svg
@@ -247,12 +286,32 @@ function RequestDetailPage() {
         </div>
       </div>
       {loading && <p>Loading...</p>}
-      {request && <RequestHeader request={request} user={request.user} />}
+      {request && (
+        <RequestHeader
+          request={request}
+          user={request.user}
+          commentCount={comments.length}
+        />
+      )}
       {request && (
         <RequestLineTable
           requestId={request.id}
           requestLines={request.requestLines}
           onRemove={removeLine}
+        />
+      )}
+      {request?.id && (
+        <CommentSection
+          requestId={request.id}
+          comments={comments}
+          onAdd={(comment) => setComments((current) => [...current, comment])}
+          onRemove={(comment) =>
+            setComments((current) =>
+              current.filter(
+                (currentComment) => currentComment.id !== comment.id,
+              ),
+            )
+          }
         />
       )}
     </section>

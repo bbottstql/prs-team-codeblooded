@@ -4,11 +4,6 @@ import { IRequest } from "./IRequest";
 const url = `${BASE_URL}/requests`;
 
 export const requestAPI = {
-<<<<<<< HEAD
-  list(status?: string): Promise<IRequest[]> {
-    let requestsUrl = `${url}`;
-    if (status) requestsUrl += `?status=${status.toUpperCase()}`;
-=======
   list(
     status?: string,
     userId?: number,
@@ -17,14 +12,37 @@ export const requestAPI = {
     let requestsUrl = `${url}`;
     const searchParams = new URLSearchParams();
     if (status) searchParams.set("status", status.toUpperCase());
-    if (userId) searchParams.set("userId", userId.toString());
-    if (excludeUserId) {
+    if (userId) {
+      searchParams.set("userId", userId.toString());
+    } else if (excludeUserId) {
       searchParams.set("excludeUserId", excludeUserId.toString());
     }
     const query = searchParams.toString();
     if (query) requestsUrl += `?${query}`;
->>>>>>> main
     return fetch(requestsUrl).then(checkStatus).then(parseJSON);
+  },
+
+  export(status?: string): Promise<{ blob: Blob; filename: string }> {
+    const exportParams = new URLSearchParams();
+    if (status) exportParams.set("status", status.toUpperCase());
+    const query = exportParams.toString();
+    const exportUrl = `${url}/export${query ? `?${query}` : ""}`;
+
+    return fetch(exportUrl)
+      .then(checkStatus)
+      .then(async (response) => {
+        const contentDisposition = response.headers.get("Content-Disposition");
+        const filenameMatch = contentDisposition?.match(
+          /filename\*?=(?:UTF-8''|"?)([^";]+)/i,
+        );
+
+        return {
+          blob: await response.blob(),
+          filename: filenameMatch?.[1]
+            ? decodeURIComponent(filenameMatch[1])
+            : "requests.csv",
+        };
+      });
   },
 
   find(id: number): Promise<IRequest> {
@@ -35,6 +53,18 @@ export const requestAPI = {
     return fetch(`${url}`, {
       method: "POST",
       body: JSON.stringify(request),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then(checkStatus)
+      .then(parseJSON);
+  },
+
+  duplicate(id: number, userId: number): Promise<IRequest> {
+    return fetch(`${url}/${id}/duplicate`, {
+      method: "POST",
+      body: JSON.stringify(userId),
       headers: {
         "Content-Type": "application/json",
       },
