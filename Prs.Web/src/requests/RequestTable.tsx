@@ -15,11 +15,6 @@ function RequestTable() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user: authenticatedUser } = useUserContext();
   const status = searchParams.get("status") ?? undefined;
-  const selectedUserId = searchParams.get("userId");
-  const selectedExcludeUserId = searchParams.get("excludeUserId");
-  const userId = selectedUserId ? Number(selectedUserId) : undefined;
-  const excludeUserId = selectedExcludeUserId
-    ? Number(selectedExcludeUserId)
   const search = searchParams.get("search") ?? "";
   const sort = searchParams.get("sort") as "status" | "total" | null;
   const direction = searchParams.get("dir") === "desc" ? "desc" : "asc";
@@ -44,7 +39,6 @@ function RequestTable() {
   useEffect(() => {
     async function fetchRequests() {
       try {
-        const data = await requestAPI.list(status, userId, excludeUserId);
         const data = await requestAPI.list(status, userId);
         setRequests(data);
       } catch (error: unknown) {
@@ -56,7 +50,6 @@ function RequestTable() {
     }
 
     fetchRequests();
-  }, [status, userId, excludeUserId]);
   }, [status, userId]);
 
   useEffect(() => {
@@ -73,19 +66,7 @@ function RequestTable() {
       | HTMLSelectElement;
     setSearchParams((currentParams) => {
       const nextParams = new URLSearchParams(currentParams);
-      if (name === "userId" && value === "anyone-else") {
-        nextParams.delete("userId");
-        if (authenticatedUser?.id !== undefined) {
-          nextParams.set("excludeUserId", authenticatedUser.id.toString());
-        }
-      } else if (name === "userId") {
-        nextParams.delete("excludeUserId");
-        if (value) {
-          nextParams.set(name, value);
-        } else {
-          nextParams.delete(name);
-        }
-      } else if (value) {
+      if (value) {
         nextParams.set(name, value);
       } else {
         nextParams.delete(name);
@@ -176,13 +157,10 @@ function RequestTable() {
           id="userId"
           name="userId"
           className="form-select"
-          value={selectedExcludeUserId ? "anyone-else" : (selectedUserId ?? "")}
+          value={searchParams.get("userId") ?? ""}
           onChange={handleFilterChange}
         >
           <option value="">Anyone</option>
-          {authenticatedUser?.isReviewer && (
-            <option value="anyone-else">Anyone else</option>
-          )}
           {authenticatedUser && (
             <option value={authenticatedUser.id}>
               {authenticatedUser.firstName} {authenticatedUser.lastName} (you)
