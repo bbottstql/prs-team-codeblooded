@@ -4,9 +4,26 @@ import { IRequest } from "./IRequest";
 const url = `${BASE_URL}/requests`;
 
 export const requestAPI = {
+<<<<<<< HEAD
   list(status?: string): Promise<IRequest[]> {
     let requestsUrl = `${url}`;
     if (status) requestsUrl += `?status=${status.toUpperCase()}`;
+=======
+  list(
+    status?: string,
+    userId?: number,
+    excludeUserId?: number,
+  ): Promise<IRequest[]> {
+    let requestsUrl = `${url}`;
+    const searchParams = new URLSearchParams();
+    if (status) searchParams.set("status", status.toUpperCase());
+    if (userId) searchParams.set("userId", userId.toString());
+    if (excludeUserId) {
+      searchParams.set("excludeUserId", excludeUserId.toString());
+    }
+    const query = searchParams.toString();
+    if (query) requestsUrl += `?${query}`;
+>>>>>>> main
     return fetch(requestsUrl).then(checkStatus).then(parseJSON);
   },
 
