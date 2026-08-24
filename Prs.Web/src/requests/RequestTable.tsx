@@ -20,12 +20,10 @@ function RequestTable() {
   const userId = selectedUserId ? Number(selectedUserId) : undefined;
   const excludeUserId = selectedExcludeUserId
     ? Number(selectedExcludeUserId)
+    : undefined;
   const search = searchParams.get("search") ?? "";
   const sort = searchParams.get("sort") as "status" | "total" | null;
   const direction = searchParams.get("dir") === "desc" ? "desc" : "asc";
-  const userId = searchParams.get("userId")
-    ? Number(searchParams.get("userId"))
-    : undefined;
 
   async function loadUsers() {
     try {
@@ -45,7 +43,6 @@ function RequestTable() {
     async function fetchRequests() {
       try {
         const data = await requestAPI.list(status, userId, excludeUserId);
-        const data = await requestAPI.list(status, userId);
         setRequests(data);
       } catch (error: unknown) {
         toast.error(
@@ -57,7 +54,6 @@ function RequestTable() {
 
     fetchRequests();
   }, [status, userId, excludeUserId]);
-  }, [status, userId]);
 
   useEffect(() => {
     loadUsers();
@@ -103,6 +99,25 @@ function RequestTable() {
       nextParams.set("dir", nextDirection);
       return nextParams;
     });
+  }
+
+  async function exportRequests() {
+    try {
+      const { blob, filename } = await requestAPI.export(status);
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to export requests.",
+        { duration: 6000 },
+      );
+    }
   }
 
   const otherUsers = users.filter((user) => user.id !== authenticatedUser?.id);
@@ -195,6 +210,16 @@ function RequestTable() {
           ))}
         </select>
       </div>
+      <button
+        type="button"
+        className="btn btn-primary mb-4"
+        onClick={exportRequests}
+      >
+        <svg className="bi me-2" width={18} height={18} fill="currentColor">
+          <use xlinkHref={`${bootstrapIcons}#cloud-download`} />
+        </svg>
+        Export CSV
+      </button>
       <section className="list d-flex flex-row flex-wrap bg-body-tertiary gap-5 p-4 rounded-4">
         <table className="table table-hover w-75 table rounded-4">
           <thead>

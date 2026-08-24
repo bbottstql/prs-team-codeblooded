@@ -22,6 +22,29 @@ export const requestAPI = {
     return fetch(requestsUrl).then(checkStatus).then(parseJSON);
   },
 
+  export(status?: string): Promise<{ blob: Blob; filename: string }> {
+    const exportParams = new URLSearchParams();
+    if (status) exportParams.set("status", status.toUpperCase());
+    const query = exportParams.toString();
+    const exportUrl = `${url}/export${query ? `?${query}` : ""}`;
+
+    return fetch(exportUrl)
+      .then(checkStatus)
+      .then(async (response) => {
+        const contentDisposition = response.headers.get("Content-Disposition");
+        const filenameMatch = contentDisposition?.match(
+          /filename\*?=(?:UTF-8''|"?)([^";]+)/i,
+        );
+
+        return {
+          blob: await response.blob(),
+          filename: filenameMatch?.[1]
+            ? decodeURIComponent(filenameMatch[1])
+            : "requests.csv",
+        };
+      });
+  },
+
   find(id: number): Promise<IRequest> {
     return fetch(`${url}/${id}`).then(checkStatus).then(parseJSON);
   },
