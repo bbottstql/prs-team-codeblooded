@@ -16,6 +16,21 @@ function ProductCard({ product, onRemove }: IProductCardProps) {
   return (
     <Card className="" style={{ width: "23rem" }}>
       <ProgressBar now={30} variant="primary-subtle" />
+      <div
+        className="d-flex align-items-center justify-content-center bg-light"
+        style={{ height: "12rem" }}
+      >
+        {product.photoPath ? (
+          <Card.Img
+            variant="top"
+            src={product.photoPath}
+            alt={product.name}
+            style={{ height: "100%", objectFit: "cover" }}
+          />
+        ) : (
+          <span className="text-secondary">No photo available</span>
+        )}
+      </div>
       <address className="py-4 px-4">
         <div className="d-flex justify-content-between1 align-items-center1 justify-content-end">
           {" "}
@@ -43,7 +58,9 @@ function ProductCard({ product, onRemove }: IProductCardProps) {
                 href="#"
                 onClick={async (event) => {
                   event.preventDefault();
-                  if (confirm("Are you sure you want to delete this product?")) {
+                  if (
+                    confirm("Are you sure you want to delete this product?")
+                  ) {
                     if (product.id) {
                       await productAPI.delete(product.id);
                       onRemove(product);
